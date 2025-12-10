@@ -2,15 +2,18 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.metrics import recall_score
 from os.path import join
-from logistic_regression import run_logistic_regression
-from naive_bayes import run_naive_bayes
-from random_forest import run_random_forest
-from data_handler import load_data
+from .logistic_regression import run_logistic_regression
+from .naive_bayes import run_naive_bayes
+from .random_forest import run_random_forest
+from .data_handler import load_data
 
 
-def run_binary_model():
+def run_binary():
+    print("\n---Training Logistic Regression---\n")
     logistic_regression_model = run_logistic_regression()
+    print("\n---Training Naive Bayes---\n")
     naive_bayes_model = run_naive_bayes()
+    print("\n---Training Random Forest---\n")
     random_forest_model = run_random_forest()
 
     X_train, y_train, X_test, y_test = load_data()
@@ -64,6 +67,6 @@ def run_binary_model():
     
     plt.tight_layout()
     
-    fig.savefig(join("plots", "model_comparison.png"))
+    fig.savefig(join("plots/binary_plots", "model_comparison.png"))
 
-run_binary_model()
+#run_binary()

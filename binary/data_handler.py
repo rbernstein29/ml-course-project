@@ -4,8 +4,8 @@ from sklearn.model_selection import train_test_split
 
 
 def parse_data():
-    true_news = pd.read_csv("dataset/dataset_binary/True.csv")
-    fake_news = pd.read_csv("dataset/dataset_binary/Fake.csv")
+    true_news = pd.read_csv("binary/dataset/dataset_binary/True.csv")
+    fake_news = pd.read_csv("binary/dataset/dataset_binary/Fake.csv")
 
     true_news['label'] = 1
     fake_news['label'] = 0
@@ -28,17 +28,17 @@ def vectorize():
     X_train = vectorizer.fit_transform(X_train_text)
     X_test = vectorizer.transform(X_test_text)
     
-    with open("dataset/vectorized_data.pkl", "wb") as f:
+    with open("binary/dataset/vectorized_data.pkl", "wb") as f:
         pickle.dump((X_train, y_train, X_test, y_test), f)
     
     print("Vectorized data saved to vectorized_data.pkl")
 
 
 def load_data():
-    if not os.path.exists("dataset/vectorized_data.pkl"):
+    if not os.path.exists("binary/dataset/vectorized_data.pkl"):
         vectorize()
 
-    with open("dataset/vectorized_data.pkl", "rb") as f:
+    with open("binary/dataset/vectorized_data.pkl", "rb") as f:
         X_train, y_train, X_test, y_test = pickle.load(f)
     
     return X_train, y_train, X_test, y_test

@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.linear_model import LogisticRegression 
 from sklearn.model_selection import cross_val_score
-from data_handler import load_data
+from .data_handler import load_data
 from os.path import join
 
 
@@ -65,8 +65,8 @@ def run_logistic_regression():
     bx.set_title(f"Regularization Tuning Test Plot")
     bx.legend()
 
-    tuning_plot.savefig(join("plots/logistic_regression_plots", "logistic_regresion_tuning_plot.png"))
-    test_plot.savefig(join("plots/logistic_regression_plots", "logistic_regression_testing_plot.png"))
+    tuning_plot.savefig(join("plots/binary_plots", "logistic_regresion_tuning_plot.png"))
+    test_plot.savefig(join("plots/binary_plots", "logistic_regression_testing_plot.png"))
 
 
     optimal_model = LogisticRegression(random_state=0, C=optimal_C, solver=optimal_solver)

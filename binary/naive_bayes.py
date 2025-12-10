@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.model_selection import cross_val_score
-from data_handler import load_data
+from .data_handler import load_data
 from os.path import join
 
 
@@ -62,8 +62,8 @@ def run_naive_bayes():
     bx.set_title(f"Smoothing Tuning Test Plot")
     bx.legend()
 
-    tuning_plot.savefig(join("plots/naive_bayes_plots", "naive_bayes_tuning_plot.png"))
-    test_plot.savefig(join("plots/naive_bayes_plots", "naive_bayed_testing_plot.png"))
+    tuning_plot.savefig(join("plots/binary_plots", "naive_bayes_tuning_plot.png"))
+    test_plot.savefig(join("plots/binary_plots", "naive_bayed_testing_plot.png"))
 
     
     final_model = MultinomialNB(alpha=optimal_alpha, fit_prior=optimal_fit_prior)

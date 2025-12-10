@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import cross_val_score
-from data_handler import load_data
+from .data_handler import load_data
 from os.path import join
 
 
@@ -63,8 +63,8 @@ def run_random_forest():
     bx.set_title(f"Max Tree Depth Tuning Test Plot")
     bx.legend()
 
-    tuning_plot.savefig(join("plots/random_forest_plots", "random_forest_tuning_plot.png"))
-    testing_plot.savefig(join("plots/random_forest_plots", "random_forest_testing_plot.png"))
+    tuning_plot.savefig(join("plots/binary_plots", "random_forest_tuning_plot.png"))
+    testing_plot.savefig(join("plots/binary_plots", "random_forest_testing_plot.png"))
     
     final_model = RandomForestClassifier(random_state=0, n_jobs=-1, n_estimators=optimal_num_trees, max_depth=optimal_max_depth)
     final_model.fit(X_train, y_train)
