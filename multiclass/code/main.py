@@ -158,7 +158,7 @@ def run_multiclass():
     }
 
     models["Neural Network"] = {
-        "pipeline": Pipeline([("preprocessor", preprocessor_scaled), ("classifier", MLPClassifier(max_iter=300, random_state=42, early_stopping=False, solver='lbfgs'))]),
+        "pipeline": Pipeline([("preprocessor", preprocessor_scaled), ("classifier", MLPClassifier(max_iter=300, random_state=42, early_stopping=False, solver='adam'))]),
         "param_grid": {
             "classifier__hidden_layer_sizes": [(50,), (100,)],
             "classifier__alpha": [0.0001, 0.001]
@@ -262,61 +262,90 @@ def run_multiclass():
     plt.close()
     print("✓ Saved model comparison plot")
 
-    best_model_name = results_df.iloc[0]["Model"]
-    best_model = best_models[best_model_name]
-    y_val_pred = best_model.predict(X_val)
-    cm = confusion_matrix(y_val, y_val_pred)
+    #best_model_name = results_df.iloc[0]["Model"]
+    #best_model = best_models[best_model_name]
+    #y_val_pred = best_model.predict(X_val)
+    #cm = confusion_matrix(y_val, y_val_pred)
 
-    plt.figure(figsize=(10, 8))
-    sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", xticklabels=sorted(y.unique()), yticklabels=sorted(y.unique()))
-    plt.title(f"Confusion Matrix - {best_model_name}", fontsize=14, fontweight="bold")
-    plt.ylabel("True Label")
-    plt.xlabel("Predicted Label")
-    plt.tight_layout()
-    plt.savefig("plots/multiclass_plots/confusion_matrix_best_model.png", dpi=300, bbox_inches="tight")
-    plt.close()
-    print(f"✓ Saved confusion matrix for {best_model_name}")
+    #plt.figure(figsize=(10, 8))
+    #sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", xticklabels=sorted(y.unique()), yticklabels=sorted(y.unique()))
+    #plt.title(f"Confusion Matrix - {best_model_name}", fontsize=14, fontweight="bold")
+    #plt.ylabel("True Label")
+    #plt.xlabel("Predicted Label")
+    #plt.tight_layout()
+    #plt.savefig("plots/multiclass_plots/confusion_matrix_best_model.png", dpi=300, bbox_inches="tight")
+    #plt.close()
+    #print(f"✓ Saved confusion matrix for {best_model_name}")
 
-    print(f"\nClassification Report for {best_model_name}:")
-    print(classification_report(y_val, y_val_pred))
+    #print(f"\nClassification Report for {best_model_name}:")
+    #print(classification_report(y_val, y_val_pred))
 
-    # 9. LEARNING CURVES
-    print("\n9. GENERATING LEARNING CURVES")
-    top_models = results_df.head(3)["Model"].tolist()
-    fig, axes = plt.subplots(2, 2, figsize=(16, 12))
-    axes = axes.ravel()
+    # 9. LOG LOSS CURVE
+    print("\n9. GENERATING LOG LOSS CURVE")
 
-    for idx, model_name in enumerate(top_models[:4]):
-        print(f"Generating learning curve for {model_name}...")
-        model = best_models[model_name]
-        train_sizes, train_scores, val_scores = learning_curve(
-            model, X_train, y_train, cv=cv, n_jobs=-1, train_sizes=np.linspace(0.1, 1.0, 10),
-            scoring="f1_weighted", shuffle=True, random_state=42
-        )
+    plt.figure(figsize=(12, 7))
+
+    # Use the hyperparameters from your param_grid
+    configs = [
+        {"hidden_layer_sizes": (50,), "alpha": 0.0001, "label": "50 neurons, α=0.0001", "color": "#e74c3c"},
+        {"hidden_layer_sizes": (50,), "alpha": 0.001, "label": "50 neurons, α=0.001", "color": "#3498db"},
+        {"hidden_layer_sizes": (100,), "alpha": 0.0001, "label": "100 neurons, α=0.0001", "color": "#2ecc71"},
+        {"hidden_layer_sizes": (100,), "alpha": 0.001, "label": "100 neurons, α=0.001", "color": "#f39c12"},
+    ]
+
+    for config in configs:
+        nn_pipeline = models["Neural Network"]["pipeline"]
         
-        train_mean = np.mean(train_scores, axis=1)
-        train_std = np.std(train_scores, axis=1)
-        val_mean = np.mean(val_scores, axis=1)
-        val_std = np.std(val_scores, axis=1)
+        nn_pipeline.fit(X_train, y_train)
+        loss_curve = nn_pipeline.named_steps['classifier'].loss_curve_
         
-        axes[idx].plot(train_sizes, train_mean, "o-", color="#2ecc71", label="Training score")
-        axes[idx].plot(train_sizes, val_mean, "o-", color="#3498db", label="Validation score")
-        axes[idx].fill_between(train_sizes, train_mean - train_std, train_mean + train_std, alpha=0.1, color="#2ecc71")
-        axes[idx].fill_between(train_sizes, val_mean - val_std, val_mean + val_std, alpha=0.1, color="#3498db")
-        axes[idx].set_title(f"Learning Curve - {model_name}", fontsize=12, fontweight="bold")
-        axes[idx].set_xlabel("Training Set Size")
-        axes[idx].set_ylabel("F1 Score")
-        axes[idx].legend(loc="best")
-        axes[idx].grid(True, alpha=0.3)
+        plt.plot(range(1, len(loss_curve) + 1), loss_curve, 
+                "o-", color=config["color"], label=config["label"], 
+                linewidth=2, markersize=3, alpha=0.8)
 
-    if len(top_models) < 4:
-        for idx in range(len(top_models), 4):
-            fig.delaxes(axes[idx])
-
+    plt.title("Training Log Loss Curve - Neural Network", fontsize=14, fontweight="bold")
+    plt.xlabel("Epoch", fontsize=12)
+    plt.ylabel("Log Loss", fontsize=12)
+    plt.grid(True, alpha=0.3)
     plt.tight_layout()
-    plt.savefig("plots/multiclass_plots/learning_curves.png", dpi=300, bbox_inches="tight")
+    plt.savefig("plots/multiclass_plots/log_loss_nn.png", dpi=300, bbox_inches="tight")
     plt.close()
-    print("✓ Saved learning curves")
+    print("✓ Saved overlaid log loss curves for Neural Network")
+    #top_models = results_df.head(3)["Model"].tolist()
+    #fig, axes = plt.subplots(2, 2, figsize=(16, 12))
+    #axes = axes.ravel()
+
+    #for idx, model_name in enumerate(top_models[:4]):
+    #    print(f"Generating learning curve for {model_name}...")
+    #   model = best_models[model_name]
+    #    train_sizes, train_scores, val_scores = learning_curve(
+    #        model, X_train, y_train, cv=cv, n_jobs=-1, train_sizes=np.linspace(0.1, 1.0, 10),
+    #        scoring="f1_weighted", shuffle=True, random_state=42
+    #    )
+        
+    #    train_mean = np.mean(train_scores, axis=1)
+    #    train_std = np.std(train_scores, axis=1)
+    #   val_mean = np.mean(val_scores, axis=1)
+    #    val_std = np.std(val_scores, axis=1)
+    #    
+    #    axes[idx].plot(train_sizes, train_mean, "o-", color="#2ecc71", label="Training score")
+    #    axes[idx].plot(train_sizes, val_mean, "o-", color="#3498db", label="Validation score")
+    #    axes[idx].fill_between(train_sizes, train_mean - train_std, train_mean + train_std, alpha=0.1, color="#2ecc71")
+    #    axes[idx].fill_between(train_sizes, val_mean - val_std, val_mean + val_std, alpha=0.1, color="#3498db")
+    #    axes[idx].set_title(f"Learning Curve - {model_name}", fontsize=12, fontweight="bold")
+    #    axes[idx].set_xlabel("Training Set Size")
+    #    axes[idx].set_ylabel("F1 Score")
+    #    axes[idx].legend(loc="best")
+    #    axes[idx].grid(True, alpha=0.3)
+
+    #if len(top_models) < 4:
+    #    for idx in range(len(top_models), 4):
+    #        fig.delaxes(axes[idx])
+
+    #plt.tight_layout()
+    #plt.savefig("plots/multiclass_plots/learning_curves.png", dpi=300, bbox_inches="tight")
+    #plt.close()
+    #print("✓ Saved learning curves")
 
     # 10. VALIDATION CURVES
     print("\n10. GENERATING VALIDATION CURVES")
@@ -360,15 +389,116 @@ def run_multiclass():
     val_mean = np.mean(val_scores, axis=1)
     plt.plot(param_range, train_mean, "o-", color="#2ecc71", label="Training score")
     plt.plot(param_range, val_mean, "o-", color="#3498db", label="Validation score")
-    plt.title("Validation Curve - Random Forest (n_estimators)", fontsize=14, fontweight="bold")
+    plt.title("Tuning Curve - Random Forest (n_estimators)", fontsize=14, fontweight="bold")
     plt.xlabel("n_estimators")
     plt.ylabel("F1 Score")
     plt.legend(loc="best")
     plt.grid(True, alpha=0.3)
     plt.tight_layout()
-    plt.savefig("plots/multiclass_plots/validation_curve_rf_nestimators.png", dpi=300, bbox_inches="tight")
+    plt.savefig("plots/multiclass_plots/tuning_curve_rf_nestimators.png", dpi=300, bbox_inches="tight")
     plt.close()
     print("✓ Saved validation curve for Random Forest")
+
+    # Validation Curve for SVM - C parameter
+    print("Generating validation curve for SVM (C parameter)...")
+    svm_model = models["Support Vector Machine"]["pipeline"]
+    param_range_c = [0.01, 0.1, 1, 10, 100, 1000]
+    train_scores, val_scores = validation_curve(
+        svm_model, X_train, y_train, param_name="classifier__C",
+        param_range=param_range_c, cv=cv, scoring="f1_weighted", n_jobs=-1
+    )
+
+    plt.figure(figsize=(10, 6))
+    train_mean = np.mean(train_scores, axis=1)
+    val_mean = np.mean(val_scores, axis=1)
+    plt.plot(param_range_c, train_mean, "o-", color="#2ecc71", label="Training score")
+    plt.plot(param_range_c, val_mean, "o-", color="#3498db", label="Validation score")
+    plt.title("Tuning Curve - SVM (C)", fontsize=14, fontweight="bold")
+    plt.xlabel("C (Regularization Parameter)")
+    plt.ylabel("F1 Score")
+    plt.xscale('log')
+    plt.legend(loc="best")
+    plt.grid(True, alpha=0.3)
+    plt.tight_layout()
+    plt.savefig("plots/multiclass_plots/tuning_curve_svm_c.png", dpi=300, bbox_inches="tight")
+    plt.close()
+    print("✓ Saved validation curve for SVM (C parameter)")
+
+    # Validation Curve for SVM - gamma parameter
+    print("Generating validation curve for SVM (gamma parameter)...")
+    param_range_gamma = [0.0001, 0.001, 0.01, 0.1, 1, 10]
+    train_scores, val_scores = validation_curve(
+        svm_model, X_train, y_train, param_name="classifier__gamma",
+        param_range=param_range_gamma, cv=cv, scoring="f1_weighted", n_jobs=-1
+    )
+
+    plt.figure(figsize=(10, 6))
+    train_mean = np.mean(train_scores, axis=1)
+    val_mean = np.mean(val_scores, axis=1)
+    plt.plot(param_range_gamma, train_mean, "o-", color="#2ecc71", label="Training score")
+    plt.plot(param_range_gamma, val_mean, "o-", color="#3498db", label="Validation score")
+    plt.title("Tuning Curve - SVM (gamma)", fontsize=14, fontweight="bold")
+    plt.xlabel("Gamma")
+    plt.ylabel("F1 Score")
+    plt.xscale('log')
+    plt.legend(loc="best")
+    plt.grid(True, alpha=0.3)
+    plt.tight_layout()
+    plt.savefig("plots/multiclass_plots/tuning_curve_svm_gamma.png", dpi=300, bbox_inches="tight")
+    plt.close()
+    print("✓ Saved validation curve for SVM (gamma parameter)")
+
+    # Validation Curve for Neural Network - hidden_layer_sizes
+    print("Generating validation curve for Neural Network (hidden_layer_sizes)...")
+    nn_model = models["Neural Network"]["pipeline"]
+    param_range_layers = [(10,), (25,), (50,), (75,), (100,), (150,), (200,)]
+    train_scores, val_scores = validation_curve(
+        nn_model, X_train, y_train, param_name="classifier__hidden_layer_sizes",
+        param_range=param_range_layers, cv=cv, scoring="f1_weighted", n_jobs=-1
+    )
+
+    plt.figure(figsize=(10, 6))
+    train_mean = np.mean(train_scores, axis=1)
+    val_mean = np.mean(val_scores, axis=1)
+    # Convert tuples to strings for x-axis labels
+    param_labels = [str(p[0]) for p in param_range_layers]
+    x_pos = np.arange(len(param_labels))
+    plt.plot(x_pos, train_mean, "o-", color="#2ecc71", label="Training score")
+    plt.plot(x_pos, val_mean, "o-", color="#3498db", label="Validation score")
+    plt.title("Tuning Curve - Neural Network (hidden_layer_sizes)", fontsize=14, fontweight="bold")
+    plt.xlabel("Hidden Layer Size")
+    plt.ylabel("F1 Score")
+    plt.xticks(x_pos, param_labels)
+    plt.legend(loc="best")
+    plt.grid(True, alpha=0.3)
+    plt.tight_layout()
+    plt.savefig("plots/multiclass_plots/tuning_curve_nn_layers.png", dpi=300, bbox_inches="tight")
+    plt.close()
+    print("✓ Saved validation curve for Neural Network (hidden_layer_sizes)")
+
+    # Validation Curve for Neural Network - alpha
+    print("Generating validation curve for Neural Network (alpha)...")
+    param_range_alpha = [0.00001, 0.0001, 0.001, 0.01, 0.1]
+    train_scores, val_scores = validation_curve(
+        nn_model, X_train, y_train, param_name="classifier__alpha",
+        param_range=param_range_alpha, cv=cv, scoring="f1_weighted", n_jobs=-1
+    )
+
+    plt.figure(figsize=(10, 6))
+    train_mean = np.mean(train_scores, axis=1)
+    val_mean = np.mean(val_scores, axis=1)
+    plt.plot(param_range_alpha, train_mean, "o-", color="#2ecc71", label="Training score")
+    plt.plot(param_range_alpha, val_mean, "o-", color="#3498db", label="Validation score")
+    plt.title("Tuning Curve - Neural Network (alpha)", fontsize=14, fontweight="bold")
+    plt.xlabel("Alpha (Regularization)")
+    plt.ylabel("F1 Score")
+    plt.xscale('log')
+    plt.legend(loc="best")
+    plt.grid(True, alpha=0.3)
+    plt.tight_layout()
+    plt.savefig("plots/multiclass_plots/tuning_curve_nn_alpha.png", dpi=300, bbox_inches="tight")
+    plt.close()
+    print("✓ Saved validation curve for Neural Network (alpha)")
 
     # KNN validation curve removed since KNN model was removed
     # (sklearn version compatibility issues with string labels)
@@ -436,3 +566,5 @@ def run_multiclass():
     print("="*80)
     print("ANALYSIS COMPLETE!")
     print("="*80)
+
+#run_multiclass()

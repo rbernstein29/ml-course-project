@@ -1,0 +1,4 @@
+Model,Best Params,Train Accuracy,Val Accuracy,Train F1,Val F1,Val Precision,Val Recall,CV Best Score
+Support Vector Machine,"{'classifier__C': 1, 'classifier__gamma': 'scale', 'classifier__kernel': 'rbf'}",0.5748373101952278,0.5421313506815365,0.5683230142306966,0.535104794693382,0.5343129702636032,0.5421313506815365,0.5186883226402336
+Random Forest,"{'classifier__max_depth': 10, 'classifier__min_samples_leaf': 1, 'classifier__min_samples_split': 2, 'classifier__n_estimators': 100}",0.682832352029749,0.5433705080545229,0.6777919544862392,0.5338400934805947,0.5320498120354875,0.5433705080545229,0.5250594814255543
+Neural Network,"{'classifier__alpha': 0.001, 'classifier__hidden_layer_sizes': (50,)}",0.5904865199876046,0.5210656753407683,0.5872352381151844,0.5186120937128835,0.5179922739480424,0.5210656753407683,0.5038385141710311
