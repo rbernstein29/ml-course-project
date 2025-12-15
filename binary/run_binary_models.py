@@ -39,6 +39,17 @@ def run_binary():
     rf_y_testing_pred = random_forest_model.predict(X_test)
     rf_testing_recall = recall_score(y_test, rf_y_testing_pred)
 
+    print("\n----------Optimal Models----------\n")
+    print("Logistic Regression:")
+    print(f"\ttraining accuracy: {lr_training_accuracy:.4f}\n\ttesting accuracy: {lr_testing_accuracy:.4f}")
+    print(f"\ttraining recall: {lr_training_recall:.4f}\n\ttesting recall: {lr_testing_recall:.4f}")
+    print("Multinomial Naive Bayes:")
+    print(f"\ttraining accuracy: {nb_training_accuracy:.4f}\n\ttesting accuracy: {nb_testing_accuracy:.4f}")
+    print(f"\ttraining recall: {nb_training_recall:.4f}\n\ttesting recall: {nb_testing_recall:.4f}")
+    print("Random Forest:")
+    print(f"\ttraining accuracy: {rf_training_accuracy:.4f}\n\ttesting accuracy: {rf_testing_accuracy:.4f}")
+    print(f"\ttraining recall: {rf_training_recall:.4f}\n\ttesting recall: {rf_testing_recall:.4f}\n")
+
     models = ['Logistic Regression', 'Naive Bayes', 'Random Forest']
     
     train_accuracy = [lr_training_accuracy, nb_training_accuracy, rf_training_accuracy]
